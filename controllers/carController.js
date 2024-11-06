@@ -3,7 +3,8 @@ const Car = require("../models/Car")
 //Add Your Car on the Platfrom
 exports.addCar = async (req, res) => {
   try {
-    const { make, model, year, userId } = req.body
+    const { make, model, year } = req.body
+    const userId = req.user.id // משיגים את ה-userId מתוך ה-Token המאומת
 
     const car = await Car.create({
       make,
@@ -26,10 +27,10 @@ exports.addCar = async (req, res) => {
 exports.updateCar = async (req, res) => {
   try {
     const { carId } = req.params
-    const { make, model, year, userId } = req.body // userId מועבר ישירות מהגוף של הבקשה לצורך בדיקות
+    const { make, model, year } = req.body // אין צורך ב-userId מהבקשה
 
     const car = await Car.findOneAndUpdate(
-      { _id: carId, userId: userId }, // שימוש ב-userId מהבקשה במקום req.user._id
+      { _id: carId, userId: req.user.id }, // שימוש ב-userId מתוך ה-JWT
       { make, model, year },
       { new: true }
     )
@@ -52,9 +53,9 @@ exports.updateCar = async (req, res) => {
 exports.deleteCar = async (req, res) => {
   try {
     const { carId } = req.params
-    const { userId } = req.body
 
-    const car = await Car.findOneAndDelete({ _id: carId, userId: userId })
+    // חיפוש ומחיקה על בסיס ה-userId מתוך ה-JWT
+    const car = await Car.findOneAndDelete({ _id: carId, userId: req.user.id })
 
     if (!car) {
       return res.status(404).json({ message: "Car not found" })
@@ -72,10 +73,8 @@ exports.deleteCar = async (req, res) => {
 //Get all  Your Cars on the Platfrom(Your cars that by your own)
 exports.getAllCars = async (req, res) => {
   try {
-    const userId = req.query.userId
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" })
-    }
+    // Use userId from the authenticated JWT
+    const userId = req.user.id
 
     const cars = await Car.find({ userId })
 
@@ -93,15 +92,13 @@ exports.getAllCars = async (req, res) => {
 exports.getOneCar = async (req, res) => {
   try {
     const { carId } = req.params
-    const userId = req.query.userId
 
     if (!carId) {
       return res.status(400).json({ message: "Car ID is required" })
     }
 
-    const car = userId
-      ? await Car.findOne({ _id: carId, userId })
-      : await Car.findById(carId)
+    // מציאת הרכב לפי carId ו־userId של המשתמש המאומת
+    const car = await Car.findOne({ _id: carId, userId: req.user.id })
 
     if (!car) {
       return res.status(404).json({ message: "Car not found" })

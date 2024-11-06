@@ -1,5 +1,9 @@
 const User = require("./../models/User")
 const bcrypt = require("bcrypt")
+const dotenv = require("dotenv")
+const jwt = require("jsonwebtoken")
+
+dotenv.config({ path: require("path").join(__dirname, "../config.env") })
 
 //SignUp User to the Platfrom
 exports.signup = async (req, res) => {
@@ -19,9 +23,15 @@ exports.signup = async (req, res) => {
       password: hashedPassword,
     })
 
+    //Create JWT Token:
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    })
+
     res.status(201).json({
       message: "User registered successfully",
       user: {
+        token,
         id: user._id,
         username: user.username,
         email: user.email,
@@ -49,9 +59,15 @@ exports.login = async (req, res) => {
       return res.status(500).json({ message: "invalid email or password" })
     }
 
+    // Create JWT Token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    })
+
     res.status(200).json({
       message: "Login successful",
       user: {
+        token,
         id: user._id,
         username: user.username,
         email: user.email,

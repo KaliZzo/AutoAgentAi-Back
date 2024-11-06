@@ -5,7 +5,6 @@ exports.addMaintenance = async (req, res) => {
   try {
     const {
       carId,
-      userId,
       maintenanceType,
       dateScheduled,
       dateCompleted,
@@ -13,12 +12,15 @@ exports.addMaintenance = async (req, res) => {
       notes,
     } = req.body
 
+    // שימוש ב־userId מתוך ה־JWT
+    const userId = req.user.id
+
     const maintenance = await Maintenance.create({
       carId,
-      userId,
+      userId, // ה-userId מתווסף אוטומטית מה־JWT
       maintenanceType,
       dateScheduled,
-      dateCompleted, // לא חובה, אם לא מסופק ישאר null
+      dateCompleted, // לא חובה, אם לא מסופק יישאר null
       cost,
       notes,
     })
@@ -38,7 +40,8 @@ exports.getMaintenanceRecords = async (req, res) => {
   try {
     const { carId } = req.params
 
-    const records = await Maintenance.find({ carId })
+    // חיפוש רשומות תחזוקה לפי carId ו־userId של המשתמש המחובר
+    const records = await Maintenance.find({ carId, userId: req.user.id })
     console.log("Fetching maintenance records for carId:", carId)
 
     res.status(200).json({
@@ -50,7 +53,6 @@ exports.getMaintenanceRecords = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
-
 //Update or Change detalis about the Mintenance
 exports.updateMaintenance = async (req, res) => {
   try {
@@ -64,14 +66,19 @@ exports.updateMaintenance = async (req, res) => {
       status,
     } = req.body
 
-    const maintenance = await Maintenance.findByIdAndUpdate(maintenanceId, {
-      maintenanceType,
-      dateScheduled,
-      dateCompleted,
-      cost,
-      notes,
-      status,
-    })
+    // חיפוש ועדכון הרשומה על בסיס maintenanceId ו־userId מה־JWT
+    const maintenance = await Maintenance.findOneAndUpdate(
+      { _id: maintenanceId, userId: req.user.id },
+      {
+        maintenanceType,
+        dateScheduled,
+        dateCompleted,
+        cost,
+        notes,
+        status,
+      },
+      { new: true } // מחזיר את הרשומה המעודכנת
+    )
 
     if (!maintenance) {
       return res.status(404).json({ message: "Maintenance record not found" })
@@ -92,7 +99,11 @@ exports.deleteMaintenance = async (req, res) => {
   try {
     const { maintenanceId } = req.params
 
-    const maintenance = await Maintenance.findByIdAndDelete(maintenanceId)
+    // מחפש ומוחק את הרשומה רק אם היא שייכת ל-userId של המשתמש המחובר
+    const maintenance = await Maintenance.findOneAndDelete({
+      _id: maintenanceId,
+      userId: req.user.id,
+    })
 
     if (!maintenance) {
       return res.status(404).json({ message: "Maintenance record not found" })
