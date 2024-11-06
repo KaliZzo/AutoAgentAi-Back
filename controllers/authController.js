@@ -1,6 +1,7 @@
 const User = require("./../models/User")
 const bcrypt = require("bcrypt")
 
+//SignUp User to the Platfrom
 exports.signup = async (req, res) => {
   try {
     const { username, email, password } = req.body
@@ -33,6 +34,7 @@ exports.signup = async (req, res) => {
   }
 }
 
+//Login User to the Platfrom
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body

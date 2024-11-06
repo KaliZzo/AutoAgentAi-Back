@@ -1,5 +1,6 @@
 const { getCarAssistantResponse } = require("../services/openAIService")
 
+//Controller to get Response from ChatGPT as a Assistent
 exports.getResponse = async (req, res) => {
   try {
     const { message } = req.body

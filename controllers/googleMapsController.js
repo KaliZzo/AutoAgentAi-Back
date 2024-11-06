@@ -3,6 +3,7 @@ const {
   getNearbyGarages,
 } = require("../services/googleMapsService")
 
+//Controller to find Near By me Garages to fix the car.
 exports.findNearbyGarages = async (req, res) => {
   try {
     let { location, latitude, longitude } = req.query
@@ -15,12 +16,10 @@ exports.findNearbyGarages = async (req, res) => {
     }
 
     if (!latitude || !longitude) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Please provide either a location name or latitude and longitude",
-        })
+      return res.status(400).json({
+        message:
+          "Please provide either a location name or latitude and longitude",
+      })
     }
 
     const coordinates = `${latitude},${longitude}`

@@ -1,5 +1,6 @@
 const Car = require("../models/Car")
 
+//Add Your Car on the Platfrom
 exports.addCar = async (req, res) => {
   try {
     const { make, model, year, userId } = req.body
@@ -21,6 +22,7 @@ exports.addCar = async (req, res) => {
   }
 }
 
+//Change the Detalis of Your Car on the Platfrom
 exports.updateCar = async (req, res) => {
   try {
     const { carId } = req.params
@@ -46,6 +48,7 @@ exports.updateCar = async (req, res) => {
   }
 }
 
+//Delete Your Car on the Platfrom
 exports.deleteCar = async (req, res) => {
   try {
     const { carId } = req.params
@@ -66,6 +69,7 @@ exports.deleteCar = async (req, res) => {
   }
 }
 
+//Get all  Your Cars on the Platfrom(Your cars that by your own)
 exports.getAllCars = async (req, res) => {
   try {
     const userId = req.query.userId
@@ -85,6 +89,7 @@ exports.getAllCars = async (req, res) => {
   }
 }
 
+//Get detail about one car
 exports.getOneCar = async (req, res) => {
   try {
     const { carId } = req.params

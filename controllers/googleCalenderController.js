@@ -1,12 +1,12 @@
 const googleCalendarService = require("../services/googleCalendarService")
 
-// הפונקציה להפנייה לעמוד ההרשאות
+//Function to get acces into my google calnder account.
 exports.getAuthURL = (req, res) => {
   const url = googleCalendarService.getAuthURL()
   res.json({ url })
 }
 
-// הפונקציה לחילוץ ה-token לאחר אישור
+//After accept my google account in the platform that's the Controller I get the token to add a event to the calender.
 exports.getTokens = async (req, res) => {
   try {
     const { code } = req.query
@@ -17,7 +17,7 @@ exports.getTokens = async (req, res) => {
   }
 }
 
-// הפונקציה להוספת אירוע ללוח השנה
+//Function to add the Evenet to the Calnder
 exports.addEvent = async (req, res) => {
   try {
     const event = req.body

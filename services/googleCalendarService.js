@@ -6,7 +6,7 @@ dotenv.config({ path: require("path").join(__dirname, "../config.env") })
 const oauth2Client = new OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  "http://localhost:3000/oauth2callback" // ה-redirect URI שהגדרת
+  "http://localhost:3000/api/v1/calendar/auth/callback" // ה-redirect URI שהגדרת
 )
 
 // הפונקציה להפניית המשתמש לעמוד ההרשאות של Google

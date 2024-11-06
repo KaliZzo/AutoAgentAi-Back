@@ -1,5 +1,6 @@
 const Maintenance = require("./../models/Maintenance")
 
+//Add Maintence reminder to the Platfrom
 exports.addMaintenance = async (req, res) => {
   try {
     const {
@@ -32,6 +33,7 @@ exports.addMaintenance = async (req, res) => {
   }
 }
 
+//Get recond of Maintence(After I added it )
 exports.getMaintenanceRecords = async (req, res) => {
   try {
     const { carId } = req.params
@@ -49,6 +51,7 @@ exports.getMaintenanceRecords = async (req, res) => {
   }
 }
 
+//Update or Change detalis about the Mintenance
 exports.updateMaintenance = async (req, res) => {
   try {
     const { maintenanceId } = req.params
@@ -83,6 +86,8 @@ exports.updateMaintenance = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
+
+//Delete Maintenance
 exports.deleteMaintenance = async (req, res) => {
   try {
     const { maintenanceId } = req.params

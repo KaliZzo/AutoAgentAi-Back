@@ -3,6 +3,7 @@ const router = express.Router()
 const maintenanceController = require("./../controllers/maintenanceController")
 
 router.post("/addMaintenance", maintenanceController.addMaintenance)
+
 router.get(
   "/getMaintenanceRecords/:carId",
   maintenanceController.getMaintenanceRecords

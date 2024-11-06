@@ -3,6 +3,7 @@ const dotenv = require("dotenv")
 
 dotenv.config({ path: require("path").join(__dirname, "../config.env") })
 
+//Connect to the Database
 const DB = process.env.MONGO_DB
 
 const connectDB = async () => {
@@ -14,4 +15,5 @@ const connectDB = async () => {
   }
 }
 
+//Export Database Model
 module.exports = connectDB
