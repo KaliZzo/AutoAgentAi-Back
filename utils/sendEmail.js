@@ -11,21 +11,18 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-const sendEmail = async (to, subject, text) => {
-  const mailOptions = {
-    from: '"AutoAgent" <noreply@autoagent.com>', // שם ושולח מייל מותאם
-    to,
-    subject,
-    text,
-  }
-
+const send2FACode = async (email, code) => {
   try {
-    await transporter.sendMail(mailOptions)
-    console.log(`Email sent to ${to}`)
+    await transporter.sendMail({
+      from: '"AutoAgent" <no-reply@autoagent.com>',
+      to: email,
+      subject: "Your 2FA Code",
+      text: `Your verification code is: ${code}`,
+    })
+    console.log("2FA code sent to:", email)
   } catch (error) {
-    console.error("Error sending email:", error)
-    throw new Error("Failed to send email")
+    console.error("Error sending 2FA code:", error)
   }
 }
 
-module.exports = sendEmail
+module.exports = { send2FACode }

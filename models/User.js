@@ -17,6 +17,14 @@ const userSchema = new mongoose.Schema({
     minlength: 8,
     select: false,
   },
+  temp2FACode: {
+    type: String,
+    select: false, // לא לשלוף את הקוד כברירת מחדל
+  },
+  temp2FACodeExpiry: {
+    type: Date,
+    select: false, // לא לשלוף את התוקף כברירת מחדל
+  },
 })
 
 const User = mongoose.model("User", userSchema)
