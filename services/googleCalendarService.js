@@ -35,8 +35,36 @@ const addEventToCalendar = async (event) => {
   return response.data
 }
 
+// פונקציה להוספת רשומת תחזוקה ליומן Google Calendar
+const addExistingMaintenanceToCalendar = async (maintenance) => {
+  const calendar = google.calendar({ version: "v3", auth: oauth2Client })
+
+  const event = {
+    summary: `Maintenance: ${maintenance.maintenanceType}`,
+    description: maintenance.notes || "Scheduled Maintenance",
+    start: {
+      dateTime: maintenance.dateScheduled.toISOString(),
+      timeZone: "Asia/Jerusalem", // אזור הזמן המתאים
+    },
+    end: {
+      dateTime: new Date(
+        new Date(maintenance.dateScheduled).getTime() + 60 * 60 * 1000
+      ).toISOString(),
+      timeZone: "Asia/Jerusalem",
+    },
+  }
+
+  const response = await calendar.events.insert({
+    calendarId: "primary",
+    resource: event,
+  })
+
+  return response.data
+}
+
 module.exports = {
   getAuthURL,
   getTokens,
   addEventToCalendar,
+  addExistingMaintenanceToCalendar,
 }

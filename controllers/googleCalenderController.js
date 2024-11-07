@@ -25,5 +25,6 @@ exports.addEvent = async (req, res) => {
     res.json(calendarEvent)
   } catch (error) {
     res.status(500).json({ message: "Error adding event to calendar", error })
+    console.log(error)
   }
 }

@@ -1,4 +1,5 @@
 const Maintenance = require("./../models/Maintenance")
+const googleCalendarService = require("../services/googleCalendarService")
 
 //Add Maintence reminder to the Platfrom
 exports.addMaintenance = async (req, res) => {
@@ -114,6 +115,29 @@ exports.deleteMaintenance = async (req, res) => {
     })
   } catch (error) {
     console.error("Error deleting maintenance record:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+exports.addMaintenanceToCalendar = async (req, res) => {
+  try {
+    const { maintenanceId } = req.params
+
+    const maintenance = await Maintenance.findById(maintenanceId)
+
+    if (!maintenance) {
+      return res.status(404).json({ message: "Maintenance record not found" })
+    }
+
+    const calendarEvent =
+      await googleCalendarService.addExistingMaintenanceToCalendar(maintenance)
+
+    res.status(200).json({
+      message: "Maintenance record added to calendar sucessfully",
+      calendarEvent,
+    })
+  } catch (erorr) {
+    console.log("Error adding maintenance record to calendar:", error)
     res.status(500).json({ message: "Server error" })
   }
 }

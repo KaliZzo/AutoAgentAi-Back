@@ -9,6 +9,11 @@ router.post(
   maintenanceController.addMaintenance
 )
 
+router.post(
+  "/:maintenanceId/add-to-calendar",
+  maintenanceController.addMaintenanceToCalendar
+)
+
 router.get(
   "/getMaintenanceRecords/:carId",
   jwtMiddleware,
