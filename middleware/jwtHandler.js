@@ -4,7 +4,8 @@ dotenv.config({ path: require("path").join(__dirname, "./../config.env") })
 
 const authenticate = (req, res, next) => {
   //Get token from Header
-  const token = req.header("Authorization")?.replace("Bearer ", "")
+  const token = req.cookies.token
+  // const token = req.header("Authorization")?.replace("Bearer ", "")
 
   // If there is no Token so back an error
   if (!token) {

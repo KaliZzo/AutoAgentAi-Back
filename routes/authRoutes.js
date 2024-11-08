@@ -5,6 +5,7 @@ const jwtMiddleware = require("./../middleware/jwtHandler") // Make sure you hav
 
 router.post("/signup", AuthController.signup)
 router.post("/login", AuthController.login)
+router.post("/logout", AuthController.logout)
 router.post("/request-2fa", jwtMiddleware, AuthController.request2FA)
 router.post("/verify-2fa", AuthController.verify2FA)
 router.post("/forgot-password", AuthController.forgotPassword)

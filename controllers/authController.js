@@ -68,6 +68,12 @@ exports.login = async (req, res) => {
       expiresIn: "1h",
     })
 
+    res.cookie("token", token, {
+      httpOnly: true, // מגביל את ה-access ל-cookie מצד הלקוח
+      secure: process.env.NODE_ENV === "production", // מאובטח רק ב-production
+      maxAge: 3600000, // שעה אחת
+    })
+
     res.status(200).json({
       message: "Login successful",
       user: {
@@ -81,6 +87,15 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error("Error in login:", error)
     res.status(500).json({ message: "Server error" })
+  }
+}
+
+exports.logout = async (req, res) => {
+  try {
+    res.cookie("token", "", { expires: new Date(0), httpOnly: true })
+    res.status(200).json({ message: "Logout successful" })
+  } catch (error) {
+    res.status(500).json({ message: "Error cookies", error })
   }
 }
 

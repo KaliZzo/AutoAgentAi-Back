@@ -1,6 +1,7 @@
 const express = require("express")
 const connectDB = require("./config/db")
 const cors = require("cors")
+const cookieParser = require("cookie-parser")
 const errorHandler = require("./middleware/errorHandler")
 const AuthRouter = require("./routes/authRoutes")
 const CarRouter = require("./routes/carRoutes")
@@ -24,6 +25,7 @@ const port = process.env.PORT
 app.use(express.json())
 app.use(cors())
 app.use(errorHandler)
+app.use(cookieParser())
 
 //Routes
 app.use("/api/v1/", AuthRouter)
