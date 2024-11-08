@@ -1,8 +1,9 @@
 const User = require("./../models/User")
 const bcrypt = require("bcrypt")
+const crypto = require("crypto")
 const dotenv = require("dotenv")
 const jwt = require("jsonwebtoken")
-const { send2FACode } = require("../utils/sendEmail")
+const { send2FACode, sendPasswordReset } = require("../utils/sendEmail")
 const generate2FACode = require("../utils/generate2FACode")
 const { dataplex } = require("googleapis/build/src/apis/dataplex")
 
@@ -83,6 +84,7 @@ exports.login = async (req, res) => {
   }
 }
 
+//Send 2FA code to your email
 exports.request2FA = async (req, res) => {
   try {
     const { email, password } = req.body
@@ -105,6 +107,7 @@ exports.request2FA = async (req, res) => {
   }
 }
 
+//Make sure the 2FA code that you get into your email it's true
 exports.verify2FA = async (req, res) => {
   try {
     const { userId, code } = req.body
@@ -138,6 +141,70 @@ exports.verify2FA = async (req, res) => {
     res.status(200).json({ message: "2FA verified successfully" })
   } catch (error) {
     console.error("Error in verify2FA:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body // וודא שזה נמצא בתחילת הקוד
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" })
+    }
+
+    const user = await User.findOne({ email })
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex")
+
+    user.resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex")
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000 // תוקף ל-10 דקות
+
+    await user.save()
+
+    const resetURL = `http://localhost:3000/api/v1/reset-password/${resetToken}`
+    await sendPasswordReset(email, resetURL)
+
+    res.status(200).json({ message: "Password reset link sent to your email." })
+  } catch (error) {
+    console.error("Error in forgotPassword:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+exports.resetPassword = async (req, res) => {
+  const { token } = req.params
+  const { password } = req.body
+
+  try {
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex")
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    })
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Token is invalid or has expired" })
+    }
+    user.password = await bcrypt.hash(password, 10)
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpires = undefined
+    await user.save()
+
+    res.status(200).json({ message: "Password reset successful" })
+  } catch (error) {
+    console.error("error is resetPassword:", error)
     res.status(500).json({ message: "Server error" })
   }
 }

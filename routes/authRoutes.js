@@ -7,5 +7,7 @@ router.post("/signup", AuthController.signup)
 router.post("/login", AuthController.login)
 router.post("/request-2fa", jwtMiddleware, AuthController.request2FA)
 router.post("/verify-2fa", AuthController.verify2FA)
+router.post("/forgot-password", AuthController.forgotPassword)
+router.put("/reset-password/:token", AuthController.resetPassword)
 
 module.exports = router

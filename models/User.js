@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false, // לא לשלוף את התוקף כברירת מחדל
   },
+  resetPasswordToken: {
+    type: String,
+  }, // טוקן לאיפוס סיסמה
+  resetPasswordExpires: {
+    type: Date,
+  }, // זמן תפוגה לאיפוס הסיסמה
 })
 
 const User = mongoose.model("User", userSchema)

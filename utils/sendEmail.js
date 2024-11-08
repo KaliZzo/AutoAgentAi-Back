@@ -25,4 +25,19 @@ const send2FACode = async (email, code) => {
   }
 }
 
-module.exports = { send2FACode }
+// פונקציה לשליחת קישור איפוס סיסמה
+const sendPasswordReset = async (email, resetURL) => {
+  try {
+    await transporter.sendMail({
+      from: '"AutoAgent Support" <support@autoagent.com>',
+      to: email,
+      subject: "Password Reset Request",
+      text: `You requested a password reset. Please click the link to reset your password: ${resetURL}`,
+    })
+    console.log("Password reset link sent to:", email)
+  } catch (error) {
+    console.error("Error sending password reset link:", error)
+  }
+}
+
+module.exports = { send2FACode, sendPasswordReset }
