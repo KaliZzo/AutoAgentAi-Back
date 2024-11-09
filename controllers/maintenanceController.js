@@ -122,22 +122,110 @@ exports.deleteMaintenance = async (req, res) => {
 exports.addMaintenanceToCalendar = async (req, res) => {
   try {
     const { maintenanceId } = req.params
+    const { code } = req.body
+    const userId = req.user.id
 
-    const maintenance = await Maintenance.findById(maintenanceId)
+    // אם אין קוד, שולחים URL להרשאה
+    if (!code) {
+      const authUrl = googleCalendarService.getAuthURL()
+      return res.status(401).json({
+        message: "Authentication required",
+        authUrl,
+      })
+    }
+
+    // מציאת רשומת התחזוקה
+    const maintenance = await Maintenance.findOne({
+      _id: maintenanceId,
+      userId,
+    }).populate("carId", "make model year")
 
     if (!maintenance) {
       return res.status(404).json({ message: "Maintenance record not found" })
     }
 
-    const calendarEvent =
-      await googleCalendarService.addExistingMaintenanceToCalendar(maintenance)
+    // קבלת טוקנים מהקוד
+    const tokens = await googleCalendarService.getTokens(code)
+
+    // הוספת האירוע ללוח השנה
+    const calendarEvent = await googleCalendarService.addMaintenanceToCalendar(
+      maintenance,
+      tokens
+    )
+
+    // שמירת מזהה האירוע
+    maintenance.calendarEventId = calendarEvent.id
+    await maintenance.save()
 
     res.status(200).json({
-      message: "Maintenance record added to calendar sucessfully",
-      calendarEvent,
+      message: "Successfully added to calendar",
+      event: calendarEvent,
     })
-  } catch (erorr) {
-    console.log("Error adding maintenance record to calendar:", error)
+  } catch (error) {
+    console.error("Calendar error:", error)
+    res.status(500).json({
+      message: "Failed to add to calendar",
+      error: error.message,
+    })
+  }
+}
+
+// Get all maintenance records
+exports.getAllMaintenanceRecords = async (req, res) => {
+  try {
+    const userId = req.user.id
+    const records = await Maintenance.find({ userId })
+      .populate("carId", "make model year") // Add car details
+      .sort({ dateScheduled: -1 }) // Sort by date, newest first
+
+    res.status(200).json({
+      message: "All maintenance records fetched successfully",
+      records,
+    })
+  } catch (error) {
+    console.error("Error fetching all maintenance records:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+// Get maintenance records for specific car
+exports.getMaintenanceRecords = async (req, res) => {
+  try {
+    const { carId } = req.params
+    const userId = req.user.id
+
+    const records = await Maintenance.find({ carId, userId })
+      .populate("carId", "make model year")
+      .sort({ dateScheduled: -1 })
+
+    res.status(200).json({
+      message: "Maintenance records fetched successfully",
+      records,
+    })
+  } catch (error) {
+    console.error("Error fetching maintenance records:", error)
+    res.status(500).json({ message: "Server error" })
+  }
+}
+
+exports.getMaintenanceById = async (req, res) => {
+  try {
+    const { maintenanceId } = req.params
+    const maintenance = await Maintenance.findOne({
+      _id: maintenanceId,
+      userId: req.user.id,
+    })
+
+    if (!maintenance) {
+      return res.status(404).json({ message: "Maintenance record not found" })
+    }
+
+    res.status(200).json({
+      message: "Maintenance record fetched successfully",
+      maintenance,
+    })
+  } catch (error) {
+    console.error("Error fetching maintenance record:", error)
     res.status(500).json({ message: "Server error" })
   }
 }

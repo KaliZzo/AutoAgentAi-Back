@@ -11,6 +11,7 @@ router.post(
 
 router.post(
   "/:maintenanceId/add-to-calendar",
+  jwtMiddleware,
   maintenanceController.addMaintenanceToCalendar
 )
 
@@ -30,4 +31,17 @@ router.delete(
   jwtMiddleware,
   maintenanceController.deleteMaintenance
 )
+
+router.get(
+  "/getAllMaintenanceRecords",
+  jwtMiddleware,
+  maintenanceController.getAllMaintenanceRecords
+)
+
+router.get(
+  "/getMaintenance/:maintenanceId",
+  jwtMiddleware,
+  maintenanceController.getMaintenanceById
+)
+
 module.exports = router
