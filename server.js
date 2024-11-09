@@ -23,7 +23,12 @@ const port = process.env.PORT
 
 //MiddleWares
 app.use(express.json())
-app.use(cors())
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Your React app's URL
+    credentials: true, // Enable credentials (cookies, authorization headers, etc.)
+  })
+)
 app.use(errorHandler)
 app.use(cookieParser())
 

@@ -10,6 +10,7 @@ const { dataplex } = require("googleapis/build/src/apis/dataplex")
 dotenv.config({ path: require("path").join(__dirname, "../config.env") })
 
 //SignUp User to the Platfrom
+//test
 exports.signup = async (req, res) => {
   try {
     const { username, email, password } = req.body
@@ -102,12 +103,11 @@ exports.logout = async (req, res) => {
 //Send 2FA code to your email
 exports.request2FA = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const userId = req.user.id
+    const user = await User.findById(userId)
 
-    const user = await User.findOne({ email }).select("+password")
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Invalid email or password" })
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
     }
 
     const code = generate2FACode()
@@ -126,37 +126,55 @@ exports.request2FA = async (req, res) => {
 exports.verify2FA = async (req, res) => {
   try {
     const { userId, code } = req.body
+    console.log("Verifying 2FA for user:", userId, "with code:", code)
 
-    // חפש את המשתמש לפי ID
     const user = await User.findById(userId).select(
       "+temp2FACode +temp2FACodeExpiry"
     )
 
-    // בדוק אם המשתמש נמצא
     if (!user) {
       return res.status(404).json({ message: "User not found" })
     }
 
-    // בדוק אם הקוד תואם
     if (user.temp2FACode.trim() !== code.trim()) {
       return res.status(400).json({ message: "Invalid 2FA code" })
     }
 
-    // בדוק אם תוקף הקוד לא פג
     if (user.temp2FACodeExpiry < Date.now()) {
       return res.status(400).json({ message: "2FA code has expired" })
     }
 
-    // נקה את הקוד כדי שלא יוכל לשמש שוב
+    // Clear 2FA code
     user.temp2FACode = undefined
     user.temp2FACodeExpiry = undefined
     await user.save()
 
-    // שלח תגובה אם הקוד נכון
-    res.status(200).json({ message: "2FA verified successfully" })
+    // Create new JWT token after successful 2FA
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    })
+
+    // Set the JWT token in cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 3600000, // 1 hour
+    })
+
+    res.status(200).json({
+      message: "2FA verified successfully",
+      user: {
+        id: user._id.toString(), // Make sure to convert ObjectId to string
+        username: user.username,
+        email: user.email,
+      },
+    })
   } catch (error) {
     console.error("Error in verify2FA:", error)
-    res.status(500).json({ message: "Server error" })
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    })
   }
 }
 
@@ -182,7 +200,7 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save()
 
-    const resetURL = `http://localhost:3000/api/v1/reset-password/${resetToken}`
+    const resetURL = `http://localhost:3000/reset-password/${resetToken}`
     await sendPasswordReset(email, resetURL)
 
     res.status(200).json({ message: "Password reset link sent to your email." })
