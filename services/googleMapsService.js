@@ -34,4 +34,16 @@ const getNearbyGarages = async (location) => {
   return response.data.results
 }
 
-module.exports = { geocodeLocation, getNearbyGarages }
+const getPlaceDetails = async (placeId) => {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=formatted_phone_number,opening_hours&key=${apiKey}`
+
+  const response = await axios.get(url)
+  return response.data.result
+}
+
+module.exports = {
+  geocodeLocation,
+  getNearbyGarages,
+  getPlaceDetails,
+}

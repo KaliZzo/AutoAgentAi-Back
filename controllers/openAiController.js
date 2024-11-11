@@ -1,24 +1,26 @@
 const { getCarAssistantResponse } = require("../services/openAIService")
-const Car = require("../models/Car")
 
-//Controller to get Response from ChatGPT as a Assistent
 exports.getResponse = async (req, res) => {
   try {
-    const { userMessage, carId } = req.body
-    const userId = req.user.id // נשלף מה-JWT, וודא שזה מתאים לפורמט הנתונים שלך
+    const { userMessage, make, model, year } = req.body
 
-    // שליפת פרטי הרכב ואימות שהוא שייך למשתמש
-    const car = await Car.findOne({ _id: carId, userId })
+    // לוגים לדיבוג
+    console.log("Received request:", {
+      userMessage,
+      make,
+      model,
+      year,
+    })
 
-    if (!car) {
-      return res.status(404).json({
-        message: "Car not found or access denied",
+    // וידוא שכל הפרמטרים הנדרשים קיימים
+    if (!userMessage || !make || !model || !year) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        received: { userMessage, make, model, year },
       })
     }
 
-    const { make, model, year } = car
-
-    // שליחת השאלה ל-OpenAI
+    // שליחת השאלה ל-OpenAI ישירות עם הפרמטרים שהתקבלו
     const assistantResponse = await getCarAssistantResponse(
       userMessage,
       make,
@@ -32,6 +34,9 @@ exports.getResponse = async (req, res) => {
     })
   } catch (error) {
     console.error("Error asking car assistant:", error)
-    res.status(500).json({ message: "Server error" })
+    res.status(500).json({
+      message: "Server error",
+      details: error.message,
+    })
   }
 }

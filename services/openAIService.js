@@ -1,5 +1,4 @@
 const { OpenAI } = require("openai")
-
 const dotenv = require("dotenv")
 dotenv.config({ path: require("path").join(__dirname, "../config.env") })
 
@@ -18,7 +17,7 @@ const getCarAssistantResponse = async (userMessage, make, model, year) => {
         },
         { role: "user", content: userMessage },
       ],
-      max_tokens: 150,
+      // max_tokens: 100
     })
     return response.choices[0].message.content
   } catch (error) {
